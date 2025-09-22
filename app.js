@@ -4,7 +4,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import cookieParser from "cookie-parser";
-import connectDB from "./utils/connectDb.js";
+import connectDB from "./utils/connectDB.js";
 import "./services/reminderScheduler.js";
 
 // app setup
@@ -21,12 +21,12 @@ app.use(
   })
 );
 //====localhost=====================
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173",
+//     credentials: true,
+//   })
+// );
 //=======================================
 
 // MongoDB Connection
