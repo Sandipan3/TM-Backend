@@ -30,7 +30,7 @@ app.use(
 //=======================================
 
 // MongoDB Connection
-connectDB();
+connectDB(); //check
 
 //routes
 app.use("/api/v1", authRoutes);
