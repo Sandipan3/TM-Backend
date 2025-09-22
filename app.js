@@ -4,8 +4,8 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import cookieParser from "cookie-parser";
-import connectDB from "./utils/connectDB.js";
 import "./services/reminderScheduler.js";
+import connectDB from "./utils/ConnectDB.js";
 
 // app setup
 const app = express();
@@ -30,7 +30,7 @@ app.use(
 //=======================================
 
 // MongoDB Connection
-connectDB(); //check
+connectDB();
 
 //routes
 app.use("/api/v1", authRoutes);
