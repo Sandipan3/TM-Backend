@@ -4,6 +4,8 @@ import { sendReminderEmail } from "./emailService.js"; // Assuming your email fu
 
 // Schedule the job to run every minute
 cron.schedule("* * * * *", async () => {
+  console.log("Trying to send email...");
+
   try {
     const now = new Date();
     const oneMinuteAgo = new Date(now.getTime() - 60000);
