@@ -5,6 +5,7 @@ import { sendReminderEmail } from "./emailService.js";
 /**
  * Reminder Cron
  * Runs every minute
+ * Sends reminder ONCE when remindAt time is reached
  */
 cron.schedule("* * * * *", async () => {
   console.log("⏰ Reminder cron tick:", new Date().toISOString());
@@ -12,46 +13,34 @@ cron.schedule("* * * * *", async () => {
   try {
     const now = new Date();
 
-    /**
-     * Find tasks that:
-     * - are not completed
-     * - reminder time has passed
-     * - reminder has NOT been sent yet
-     */
     const tasksToRemind = await Task.find({
       completed: false,
-      remindAt: { $lte: now },
-      lastReminderSentAt: null,
+      remindAt: { $lte: now }, // reminder time reached
+      lastReminderSentAt: null, // not sent yet
     }).populate("userId", "email");
 
-    console.log(`📨 Tasks eligible for reminder: ${tasksToRemind.length}`);
+    console.log(`Tasks eligible: ${tasksToRemind.length}`);
 
     for (const task of tasksToRemind) {
-      if (!task.userId?.email) {
-        console.warn(`⚠️ Task ${task._id} has no user email`);
-        continue;
-      }
+      if (!task.userId?.email) continue;
+
+      console.log(`Sending reminder to ${task.userId.email}`);
 
       try {
-        console.log(`✉️ Sending reminder to ${task.userId.email}`);
-
         await sendReminderEmail(task.userId.email, task);
 
-        // Mark reminder as sent
-        task.lastReminderSentAt = now;
+        // Mark as sent EXACTLY ONCE
+        task.lastReminderSentAt = task.remindAt;
         await task.save();
 
-        console.log(`✅ Reminder sent for task: ${task.title}`);
-      } catch (mailError) {
-        console.error(
-          `❌ Failed to send email for task ${task._id}`,
-          mailError
-        );
+        console.log(`Reminder sent for "${task.title}"`);
+      } catch (err) {
+        console.error(`Email failed for task ${task._id}`, err);
       }
     }
   } catch (error) {
-    console.error("🔥 Reminder cron failed:", error);
+    console.error("Reminder cron error:", error);
   }
 });
 
-console.log("🚀 Reminder cron initialized (runs every minute)");
+console.log("Reminder cron initialized");
