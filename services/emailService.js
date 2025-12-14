@@ -1,12 +1,13 @@
 import { Resend } from "resend";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_KEY);
 
 export const sendReminderEmail = async (userEmail, task) => {
   await resend.emails.send({
-    from: "Task-Management <onboarding@resend.dev>",
+    from: "Task Management <no-reply@resend.dev>",
     to: userEmail,
     subject: `⏰ Reminder: ${task.title}`,
     html: `
