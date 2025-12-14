@@ -47,6 +47,9 @@ export const getAllTasks = async (req, res) => {
 export const updateTask = async (req, res) => {
   const { title } = req.params;
   const updates = req.body;
+  if (updates.remindAt) {
+    updates.lastReminderSentAt = null;
+  }
 
   try {
     const updatedTask = await Task.findOneAndUpdate(
