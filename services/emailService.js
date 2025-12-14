@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_KEY);
 
 export const sendReminderEmail = async (userEmail, task) => {
   await resend.emails.send({
-    from: process.env.FROM_EMAIL,
+    from: "Task-Management <onboarding@resend.dev>",
     to: userEmail,
     subject: `⏰ Reminder: ${task.title}`,
     html: `
