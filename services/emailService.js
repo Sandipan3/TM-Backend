@@ -1,24 +1,23 @@
+import { Resend } from "resend";
 import dotenv from "dotenv";
 dotenv.config();
-import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: "587",
-  secure: false,
-  auth: {
-    user: "97e69c001@smtp-brevo.com", // Will use '97e69c001@smtp-brevo.com'
-    pass: "MdEGkBPJN9qnLAOh", // Will use your Master Password
-  },
-});
+const resend = new Resend(process.env.RESEND_KEY);
 
 export const sendReminderEmail = async (userEmail, task) => {
-  const mailOptions = {
-    from: process.env.SMTP_USER,
+  await resend.emails.send({
+    from: process.env.FROM_EMAIL,
     to: userEmail,
-    subject: `Reminder: ${task.title}`,
-    text: `Task: ${task.title}\nDeadline: ${task.deadline}\nDon't forget to complete your task!`,
-  };
-
-  await transporter.sendMail(mailOptions);
+    subject: `⏰ Reminder: ${task.title}`,
+    html: `
+      <div style="font-family: Arial, sans-serif">
+        <h2>Task Reminder</h2>
+        <p><strong>Task:</strong> ${task.title}</p>
+        <p><strong>Deadline:</strong> ${new Date(
+          task.deadline
+        ).toLocaleString()}</p>
+        <p>Don't forget to complete your task!</p>
+      </div>
+    `,
+  });
 };

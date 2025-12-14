@@ -1,41 +1,31 @@
 import cron from "node-cron";
 import Task from "../models/Task.js";
-import { sendReminderEmail } from "./emailService.js"; // Assuming your email function is in this file
+import { sendReminderEmail } from "./emailService.js";
 
-// Schedule the job to run every minute
+// Run every minute
 cron.schedule("* * * * *", async () => {
-  console.log("Trying to send email...");
-
   try {
     const now = new Date();
-    const oneMinuteAgo = new Date(now.getTime() - 60000);
+    const oneMinuteAgo = new Date(now.getTime() - 60 * 1000); // last 60 sec window
 
-    // Find tasks within the last minute that need a reminder
+    // Find pending tasks that need reminders
     const tasksToRemind = await Task.find({
-      // 1. Find tasks scheduled within the last 60 seconds
-      remindAt: { $gt: oneMinuteAgo, $lte: now },
-      // 2. Only find incomplete tasks
-      completed: false,
-      // 3. Only find tasks where the current reminder time is different
-      //    from the one we last sent an email for. This handles edits.
-      $expr: { $ne: ["$remindAt", "$lastReminderSentAt"] },
+      remindAt: { $gt: oneMinuteAgo, $lte: now }, // due now
+      completed: false, // not finished
+      $expr: { $ne: ["$remindAt", "$lastReminderSentAt"] }, // avoid duplicates
     }).populate("userId", "email");
 
     for (const task of tasksToRemind) {
-      // Ensure user and email are populated before trying to send
-      if (task.userId && task.userId.email) {
-        await sendReminderEmail(task.userId.email, task);
-        console.log(
-          `Reminder sent for task: "${task.title}" to ${task.userId.email}`
-        );
+      if (task.userId?.email) {
+        await sendReminderEmail(task.userId.email, task); // send email
 
-        task.lastReminderSentAt = task.remindAt;
+        task.lastReminderSentAt = task.remindAt; // mark as sent
         await task.save();
       }
     }
   } catch (error) {
-    console.error("Error during reminder schedule:", error);
+    console.error("Reminder cron error:", error);
   }
 });
 
-console.log("Reminder scheduler started successfully. Checking every minute.");
+console.log("Reminder cron running (every minute)");
